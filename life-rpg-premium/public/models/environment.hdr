@@ -1,0 +1,293 @@
+// environment.js – Gym room, neon lights, equipment, mirror, particles
+
+// Floor
+const floorGeometry = new THREE.PlaneGeometry(30, 30);
+const floorMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x1a1a1a,
+    roughness: 0.8,
+    metalness: 0.2
+});
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// Floor grid pattern (rubber matting)
+const gridHelper = new THREE.GridHelper(30, 30, 0x333333, 0x222222);
+gridHelper.position.y = 0.01;
+scene.add(gridHelper);
+
+// Walls
+const wallMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x111111,
+    roughness: 0.9,
+    metalness: 0.1
+});
+
+// Back wall
+const backWall = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), wallMaterial);
+backWall.position.set(0, 5, -8);
+backWall.receiveShadow = true;
+scene.add(backWall);
+
+// Side walls
+const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+leftWall.position.set(-10, 5, 0);
+leftWall.rotation.y = Math.PI / 2;
+leftWall.receiveShadow = true;
+scene.add(leftWall);
+
+const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), wallMaterial);
+rightWall.position.set(10, 5, 0);
+rightWall.rotation.y = -Math.PI / 2;
+rightWall.receiveShadow = true;
+scene.add(rightWall);
+
+// Ceiling
+const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(30, 20), new THREE.MeshStandardMaterial({
+    color: 0x0a0a0a,
+    roughness: 1
+}));
+ceiling.position.y = 6;
+ceiling.rotation.x = Math.PI / 2;
+scene.add(ceiling);
+
+// Neon strips
+function createNeonStrip(x, y, z, length, rotationY = 0, color = 0x00ff88) {
+    const stripGeometry = new THREE.BoxGeometry(length, 0.05, 0.05);
+    const stripMaterial = new THREE.MeshBasicMaterial({ 
+        color: color,
+        emissive: color,
+        emissiveIntensity: 2
+    });
+    const strip = new THREE.Mesh(stripGeometry, stripMaterial);
+    strip.position.set(x, y, z);
+    strip.rotation.y = rotationY;
+    scene.add(strip);
+    const light = new THREE.PointLight(color, 0.5, 5);
+    light.position.set(x, y, z);
+    scene.add(light);
+    return strip;
+}
+
+// Wall neon strips
+createNeonStrip(0, 4, -7.9, 20, 0, 0x00ff88);
+createNeonStrip(0, 2, -7.9, 15, 0, 0x00ff88);
+createNeonStrip(-9.9, 3, 0, 15, Math.PI/2, 0x00ff88);
+createNeonStrip(9.9, 3, 0, 15, -Math.PI/2, 0x00ff88);
+
+// Floor edge lighting
+createNeonStrip(0, 0.1, -8, 20, 0, 0x00ff88);
+createNeonStrip(-10, 0.1, 0, 16, Math.PI/2, 0x00ff88);
+createNeonStrip(10, 0.1, 0, 16, -Math.PI/2, 0x00ff88);
+
+// Main ceiling light fixture
+const ceilingLightGeo = new THREE.BoxGeometry(4, 0.1, 2);
+const ceilingLightMat = new THREE.MeshBasicMaterial({ 
+    color: 0xffffff,
+    emissive: 0xffffff,
+    emissiveIntensity: 1
+});
+const ceilingLight = new THREE.Mesh(ceilingLightGeo, ceilingLightMat);
+ceilingLight.position.set(0, 5.9, 0);
+scene.add(ceilingLight);
+
+// Spotlights
+const spotLight1 = new THREE.SpotLight(0xffffff, 1);
+spotLight1.position.set(0, 5.5, 0);
+spotLight1.angle = Math.PI / 6;
+spotLight1.penumbra = 0.5;
+spotLight1.castShadow = true;
+spotLight1.shadow.mapSize.width = 1024;
+spotLight1.shadow.mapSize.height = 1024;
+scene.add(spotLight1);
+
+// Rim lights
+const rimLight1 = new THREE.SpotLight(0x00ff88, 2);
+rimLight1.position.set(-5, 3, -3);
+rimLight1.lookAt(0, 1, 0);
+rimLight1.angle = Math.PI / 4;
+rimLight1.penumbra = 0.8;
+scene.add(rimLight1);
+
+const rimLight2 = new THREE.SpotLight(0x0088ff, 1.5);
+rimLight2.position.set(5, 3, -3);
+rimLight2.lookAt(0, 1, 0);
+rimLight2.angle = Math.PI / 4;
+rimLight2.penumbra = 0.8;
+scene.add(rimLight2);
+
+// Ambient
+const ambientLight = new THREE.AmbientLight(0x111111, 0.5);
+scene.add(ambientLight);
+
+// Dumbbell rack
+function createDumbbellRack(x, z) {
+    const rackGroup = new THREE.Group();
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.3 });
+    const frameGeo = new THREE.BoxGeometry(2, 1.2, 0.5);
+    const frame = new THREE.Mesh(frameGeo, frameMat);
+    frame.position.y = 0.6;
+    rackGroup.add(frame);
+    const dumbbellMat = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.9, roughness: 0.2 });
+    for(let i = 0; i < 5; i++) {
+        const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.4, 8);
+        const handle = new THREE.Mesh(handleGeo, dumbbellMat);
+        handle.rotation.z = Math.PI / 2;
+        handle.position.set(-0.6 + i * 0.3, 0.9 + i * 0.05, 0);
+        const weightGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.05, 16);
+        const weight1 = new THREE.Mesh(weightGeo, dumbbellMat);
+        weight1.rotation.z = Math.PI / 2;
+        weight1.position.set(-0.4 + i * 0.3, 0.9 + i * 0.05, 0);
+        const weight2 = new THREE.Mesh(weightGeo, dumbbellMat);
+        weight2.rotation.z = Math.PI / 2;
+        weight2.position.set(-0.8 + i * 0.3, 0.9 + i * 0.05, 0);
+        rackGroup.add(handle, weight1, weight2);
+    }
+    rackGroup.position.set(x, 0, z);
+    return rackGroup;
+}
+scene.add(createDumbbellRack(-6, -5));
+
+// Bench press
+function createBenchPress(x, z) {
+    const benchGroup = new THREE.Group();
+    const padMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+    const padGeo = new THREE.BoxGeometry(1.8, 0.1, 0.5);
+    const pad = new THREE.Mesh(padGeo, padMat);
+    pad.position.y = 0.5;
+    benchGroup.add(pad);
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.7 });
+    const legGeo = new THREE.BoxGeometry(0.05, 0.5, 0.4);
+    [-0.7, 0, 0.7].forEach(lx => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(lx, 0.25, 0);
+        benchGroup.add(leg);
+    });
+    const rackGeo = new THREE.BoxGeometry(0.1, 1.2, 0.1);
+    const rack1 = new THREE.Mesh(rackGeo, legMat);
+    rack1.position.set(-0.9, 0.6, 0);
+    const rack2 = new THREE.Mesh(rackGeo, legMat);
+    rack2.position.set(0.9, 0.6, 0);
+    benchGroup.add(rack1, rack2);
+    const barGeo = new THREE.CylinderGeometry(0.02, 0.02, 2.2, 8);
+    const barMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.9 });
+    const bar = new THREE.Mesh(barGeo, barMat);
+    bar.rotation.z = Math.PI / 2;
+    bar.position.set(0, 1.1, 0);
+    benchGroup.add(bar);
+    const plateGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.05, 16);
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
+    [-0.9, -0.85, 0.85, 0.9].forEach(px => {
+        const plate = new THREE.Mesh(plateGeo, plateMat);
+        plate.rotation.z = Math.PI / 2;
+        plate.position.set(px, 1.1, 0);
+        benchGroup.add(plate);
+    });
+    benchGroup.position.set(x, 0, z);
+    return benchGroup;
+}
+scene.add(createBenchPress(0, -5));
+
+// Treadmill
+function createTreadmill(x, z, rotation = 0) {
+    const tmGroup = new THREE.Group();
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+    const baseGeo = new THREE.BoxGeometry(0.8, 0.2, 2);
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = 0.1;
+    tmGroup.add(base);
+    const beltMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
+    const beltGeo = new THREE.BoxGeometry(0.7, 0.02, 1.8);
+    const belt = new THREE.Mesh(beltGeo, beltMat);
+    belt.position.y = 0.21;
+    tmGroup.add(belt);
+    const consoleMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    const consoleGeo = new THREE.BoxGeometry(0.6, 0.4, 0.1);
+    const console = new THREE.Mesh(consoleGeo, consoleMat);
+    console.position.set(0, 1.2, -0.9);
+    console.rotation.x = -0.2;
+    tmGroup.add(console);
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x00ff88, emissive: 0x00ff88, emissiveIntensity: 0.5 });
+    const screenGeo = new THREE.PlaneGeometry(0.4, 0.2);
+    const screen = new THREE.Mesh(screenGeo, screenMat);
+    screen.position.set(0, 1.25, -0.84);
+    screen.rotation.x = -0.2;
+    tmGroup.add(screen);
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8 });
+    const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.2, 8);
+    [-0.35, 0.35].forEach(hx => {
+        const handle = new THREE.Mesh(handleGeo, handleMat);
+        handle.position.set(hx, 0.7, -0.8);
+        tmGroup.add(handle);
+    });
+    tmGroup.position.set(x, 0, z);
+    tmGroup.rotation.y = rotation;
+    return tmGroup;
+}
+scene.add(createTreadmill(5, -4, -0.3));
+
+// Mirror wall
+const mirrorGeo = new THREE.PlaneGeometry(8, 4);
+const mirrorMat = new THREE.MeshStandardMaterial({ 
+    color: 0x888888,
+    metalness: 0.95,
+    roughness: 0.05,
+    envMapIntensity: 1
+});
+const mirror = new THREE.Mesh(mirrorGeo, mirrorMat);
+mirror.position.set(0, 2.5, -7.95);
+scene.add(mirror);
+
+// Mirror frame with neon
+const frameGeo = new THREE.BoxGeometry(8.2, 4.2, 0.05);
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+const mirrorFrame = new THREE.Mesh(frameGeo, frameMat);
+mirrorFrame.position.set(0, 2.5, -7.97);
+scene.add(mirrorFrame);
+
+// Neon around mirror
+createNeonStrip(0, 4.6, -7.9, 8.2, 0, 0x00ff88);
+createNeonStrip(0, 0.4, -7.9, 8.2, 0, 0x00ff88);
+
+// Particle system (atmospheric dust)
+const particleCount = 200;
+const particleGeometry = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(particleCount * 3);
+const particleVelocities = [];
+for(let i = 0; i < particleCount; i++) {
+    particlePositions[i * 3] = (Math.random() - 0.5) * 20;
+    particlePositions[i * 3 + 1] = Math.random() * 8;
+    particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+    particleVelocities.push({
+        x: (Math.random() - 0.5) * 0.01,
+        y: Math.random() * 0.01 + 0.005,
+        z: (Math.random() - 0.5) * 0.01
+    });
+}
+particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+const particleMaterial = new THREE.PointsMaterial({
+    color: 0x00ff88,
+    size: 0.03,
+    transparent: true,
+    opacity: 0.6,
+    blending: THREE.AdditiveBlending
+});
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
+// Animation for particles (to be called in main loop)
+window.animateParticles = () => {
+    const positions = particles.geometry.attributes.position.array;
+    for(let i = 0; i < particleCount; i++) {
+        positions[i * 3] += particleVelocities[i].x;
+        positions[i * 3 + 1] += particleVelocities[i].y;
+        positions[i * 3 + 2] += particleVelocities[i].z;
+        if(positions[i * 3 + 1] > 8) {
+            positions[i * 3 + 1] = 0;
+            positions[i * 3] = (Math.random() - 0.5) * 20;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+        }
+    }
+    particles.geometry.attributes.position.needsUpdate = true;
+};
